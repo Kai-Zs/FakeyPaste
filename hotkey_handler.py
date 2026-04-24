@@ -5,16 +5,10 @@ except Exception:
 
 
 class HotkeyHandler:
-    _REGISTERED_HOTKEYS = [
-        ('ctrl+shift+p', '_on_start_resume_hotkey'),
-        ('ctrl+shift+l', '_on_pause_hotkey')
-    ]
-
     def __init__(self):
         self._start_callback = None
         self._pause_callback = None
         self._resume_callback = None
-        self._registered = False
 
     def set_callbacks(self, start_callback, pause_callback, resume_callback):
         self._start_callback = start_callback
@@ -28,34 +22,22 @@ class HotkeyHandler:
         if not self.is_available():
             return False
 
-        if self._registered:
-            return True
-
         try:
-            for hotkey, method_name in HotkeyHandler._REGISTERED_HOTKEYS:
-                keyboard.add_hotkey(hotkey, getattr(self, method_name))
-            self._registered = True
+            keyboard.add_hotkey('ctrl+shift+p', self._on_start_resume_hotkey)
+            keyboard.add_hotkey('ctrl+shift+l', self._on_pause_hotkey)
             return True
         except Exception as e:
-            self.unregister_hotkeys()
             raise RuntimeError(f"快捷键注册失败: {str(e)}")
 
     def unregister_hotkeys(self):
-        if not self.is_available() or not self._registered:
+        if not self.is_available():
             return
 
         try:
-            for hotkey, _ in HotkeyHandler._REGISTERED_HOTKEYS:
-                try:
-                    keyboard.remove_hotkey(hotkey)
-                except Exception:
-                    pass
-            self._registered = False
-        except Exception:
+            keyboard.remove_hotkey('ctrl+shift+p')
+            keyboard.remove_hotkey('ctrl+shift+l')
+        except:
             pass
-
-    def is_registered(self):
-        return self._registered
 
     def _on_start_resume_hotkey(self):
         if self._resume_callback:
@@ -64,3 +46,9 @@ class HotkeyHandler:
     def _on_pause_hotkey(self):
         if self._pause_callback:
             self._pause_callback()
+
+    def override_start_callback(self, callback):
+        self._start_callback = callback
+
+    def override_resume_callback(self, callback):
+        self._resume_callback = callback

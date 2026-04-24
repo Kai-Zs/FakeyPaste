@@ -140,27 +140,8 @@ class ConfigFrame(ctk.CTkFrame):
                                 text_color="gray50")
         s_label.pack(side="left", padx=(0, 20))
 
-        resume_delay_label = ctk.CTkLabel(self,
-                                          text="继续延时",
-                                          font=FontManager.label_font(),
-                                          text_color="gray40")
-        resume_delay_label.pack(side="left", padx=(0, 5))
-
-        self.entry_resume_delay = ctk.CTkEntry(self,
-                                               width=60,
-                                               height=32,
-                                               font=FontManager.entry_font())
-        self.entry_resume_delay.insert(0, "3")
-        self.entry_resume_delay.pack(side="left", padx=(0, 5))
-
-        resume_s_label = ctk.CTkLabel(self,
-                                      text="秒",
-                                      font=FontManager.small_label_font(),
-                                      text_color="gray50")
-        resume_s_label.pack(side="left", padx=(0, 20))
-
         hotkey_label = ctk.CTkLabel(self,
-                                     text="快捷键: Ctrl+Shift+P 开始/继续 | Ctrl+Shift+L 暂停",
+                                     text="快捷键: Ctrl+Shift+P 开始 | Ctrl+Shift+L 停止",
                                      font=FontManager.small_label_font(),
                                      text_color="gray50")
         hotkey_label.pack(side="right", padx=(0, 15))
@@ -180,23 +161,19 @@ class HelpFrame(ctk.CTkFrame):
         super().__init__(parent, corner_radius=10)
         self.pack(padx=15, pady=(0, 12), fill="x")
 
-        help_text = ("📋 使用说明：\n"
-                     "  1. 点击「从剪贴板粘贴」将代码载入预览区\n"
-                     "  2. 切换到目标窗口，将光标定位到输入位置\n"
+        help_text = ("使用说明：\n"
+                     "  1. 点击「从剪贴板粘贴」载入内容到预览区\n"
+                     "  2. 切换到目标窗口并将光标定位到输入框\n"
                      "  3. 点击「开始输入」或使用快捷键 Ctrl+Shift+P 开始模拟输入\n"
-                     "  4. 输入过程中可点击「暂停输入」或按 Ctrl+Shift+L 暂停\n"
-                     "  5. 暂停后按 Ctrl+Shift+P 或点击「继续输入」恢复\n"
-                     "  6. 点击「停止输入」可随时中止当前输入\n\n"
-                     "💡 温馨提示：\n"
-                     "  - 在阿尔法平台上使用时，建议复制代码后点击「清空缩进」\n"
-                     "    （平台 IDE 会自动添加缩进）")
+                     "  4. 输入过程中可点击「暂停输入」暂停，「继续输入」恢复\n"
+                     "  5. 按「停止输入」或 Ctrl+Shift+L 可随时中止")
 
         help_label = ctk.CTkLabel(self,
                                    text=help_text,
-                                   font=ctk.CTkFont(family="Maple Mono NF CN", size=12, weight="normal"),
-                                   text_color="#e0e0e0",
+                                   font=FontManager.label_font(),
+                                   text_color="gray30",
                                    justify="left")
-        help_label.pack(padx=15, pady=12)
+        help_label.pack(padx=15, pady=10)
 
 
 class TextPreviewFrame(ctk.CTkFrame):

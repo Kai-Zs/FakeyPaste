@@ -12,8 +12,8 @@ class TypingEngine:
     def __init__(self):
         self._typing_thread = None
         self._stop_flag = threading.Event()
-        self._pause_flag = threading.Event()
         self._resume_delay = 0.0
+        self._pause_flag = threading.Event()
         self._status_callback = None
         self._progress_callback = None
 
@@ -69,73 +69,74 @@ class TypingEngine:
     def _typing_worker(self, text, per_char_delay, start_delay):
         try:
             total_chars = len(text)
-            if total_chars == 0:
-                self._safe_set_status('【完成】无内容可输入')
-                return
 
             self._safe_set_status(f'【准备输入】共 {total_chars} 个字符')
 
-            if not self._countdown(start_delay):
+            remaining = start_delay
+            while remaining > 0 and not self._stop_flag.is_set():
+                seconds = int(remaining)
+                if seconds > 0:
+                    self._safe_set_status(f'【倒计时】{seconds} 秒后开始输入...')
+                else:
+                    self._safe_set_status(f'【倒计时】{remaining:.1f} 秒后开始输入...')
+                time.sleep(0.2)
+                remaining -= 0.2
+
+            if self._stop_flag.is_set():
+                self._safe_set_status('【已取消】输入已取消')
                 return
 
             self._safe_set_status('【开始输入】正在模拟键盘输入...')
 
             for i, ch in enumerate(text):
                 if self._stop_flag.is_set():
-                    self._report_progress(i, total_chars, '【已停止】')
+                    progress = (i / total_chars) * 100
+                    self._safe_set_status(f'【已停止】已输入 {i}/{total_chars} 个字符 ({progress:.0f}%)')
                     break
 
-                if not self._handle_pause(i, total_chars):
-                    self._report_progress(i, total_chars, '【已停止】')
+                while self._pause_flag.is_set() and not self._stop_flag.is_set():
+                    progress = (i / total_chars) * 100
+                    self._safe_set_status(f'【已暂停】已输入 {i}/{total_chars} 个字符 ({progress:.0f}%)')
+                    time.sleep(0.2)
+
+                if self._stop_flag.is_set():
+                    progress = (i / total_chars) * 100
+                    self._safe_set_status(f'【已停止】已输入 {i}/{total_chars} 个字符 ({progress:.0f}%)')
+                    break
+
+                if hasattr(self, '_resume_delay') and self._resume_delay > 0:
+                    remaining = self._resume_delay
+                    delattr(self, '_resume_delay')
+                    while remaining > 0 and not self._stop_flag.is_set():
+                        seconds = int(remaining)
+                        if seconds > 0:
+                            self._safe_set_status(f'【继续倒计时】{seconds} 秒后继续输入...')
+                        else:
+                            self._safe_set_status(f'【继续倒计时】{remaining:.1f} 秒后继续输入...')
+                        time.sleep(0.2)
+                        remaining -= 0.2
+
+                if self._stop_flag.is_set():
+                    progress = (i / total_chars) * 100
+                    self._safe_set_status(f'【已停止】已输入 {i}/{total_chars} 个字符 ({progress:.0f}%)')
                     break
 
                 try:
                     keyboard.write(ch)
-                except Exception:
+                except:
                     try:
                         keyboard.send(ch)
-                    except Exception:
+                    except:
                         pyperclip.copy(ch)
                         keyboard.press_and_release('ctrl+v')
 
                 time.sleep(per_char_delay)
 
                 if (i + 1) % 2 == 0 or (i + 1) == total_chars:
-                    self._report_progress(i + 1, total_chars, '【输入中】')
+                    progress = ((i + 1) / total_chars) * 100
+                    self._safe_set_status(f'【输入中】{i + 1}/{total_chars} 字符 ({progress:.0f}%)')
             else:
                 self._safe_set_status(f'【完成】已成功输入 {total_chars} 个字符！')
         finally:
             self._stop_flag.clear()
             self._pause_flag.clear()
-
-    def _countdown(self, seconds):
-        remaining = seconds
-        while remaining > 0 and not self._stop_flag.is_set():
-            display_sec = int(remaining) if remaining >= 1 else round(remaining, 1)
-            self._safe_set_status(f'【倒计时】{display_sec} 秒后开始输入...')
-            time.sleep(0.2)
-            remaining -= 0.2
-        return not self._stop_flag.is_set()
-
-    def _handle_pause(self, current_char, total_chars):
-        while self._pause_flag.is_set() and not self._stop_flag.is_set():
-            self._report_progress(current_char, total_chars, '【已暂停】')
-            time.sleep(0.2)
-
-        if self._stop_flag.is_set():
-            return False
-
-        if self._resume_delay > 0:
-            remaining = self._resume_delay
-            self._resume_delay = 0.0
-            while remaining > 0 and not self._stop_flag.is_set():
-                display_sec = int(remaining) if remaining >= 1 else round(remaining, 1)
-                self._safe_set_status(f'【继续倒计时】{display_sec} 秒后继续输入...')
-                time.sleep(0.2)
-                remaining -= 0.2
-
-        return not self._stop_flag.is_set()
-
-    def _report_progress(self, current, total, prefix):
-        progress = (current / total) * 100
-        self._safe_set_status(f'{prefix}已输入 {current}/{total} 字符 ({progress:.0f}%)')
