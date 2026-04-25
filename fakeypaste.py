@@ -8,6 +8,7 @@ import time
 from typing_engine import TypingEngine
 from clipboard_manager import ClipboardManager
 from hotkey_handler import HotkeyHandler
+from font_manager import FontManager
 
 ctk.set_appearance_mode("dark")
 ctk.set_default_color_theme("blue")
@@ -23,6 +24,8 @@ class ClipboardTyperApp:
 
         self._set_window_icon()
 
+        FontManager.register()
+
         self.is_locked = False
         self.preview_timestamp = 0
         self.mini_mode = False
@@ -37,10 +40,10 @@ class ClipboardTyperApp:
         self.status_indicator = ctk.CTkLabel(self.status_frame, text="●", font=("Segoe UI", 14, "bold"), text_color="#28a745", padx=20)
         self.status_indicator.pack(side="left")
 
-        self.status_label = ctk.CTkLabel(self.status_frame, text="就绪 - 等待操作", font=("Maple Mono NF CN", 12, "bold"), text_color="#ffffff", padx=10)
+        self.status_label = ctk.CTkLabel(self.status_frame, text="就绪 - 等待操作", font=FontManager.get(size=12, weight="bold"), text_color="#ffffff", padx=10)
         self.status_label.pack(side="left", fill="x", expand=True)
 
-        self.freshness_label = ctk.CTkLabel(self.status_frame, text="", font=("Maple Mono NF CN", 10), text_color="gray50", padx=15)
+        self.freshness_label = ctk.CTkLabel(self.status_frame, text="", font=FontManager.get(size=10, weight="bold"), text_color="gray50", padx=15)    
         self.freshness_label.pack(side="right")
 
         self.main_frame = ctk.CTkFrame(root, corner_radius=15)
@@ -55,7 +58,7 @@ class ClipboardTyperApp:
     def _setup_ui(self):
         title_frame = ctk.CTkFrame(self.main_frame, corner_radius=12, fg_color="#667eea")
         title_frame.pack(padx=15, pady=(15, 12), fill="x")
-        title_label = ctk.CTkLabel(title_frame, text="FakeyPaste", font=("Maple Mono NF CN", 20, "bold"), text_color="white")
+        title_label = ctk.CTkLabel(title_frame, text="FakeyPaste", font=FontManager.get(size=16, weight="bold"), text_color="white")
         title_label.pack(pady=15)
 
         toolbar_frame = ctk.CTkFrame(self.main_frame, corner_radius=10)
@@ -64,28 +67,28 @@ class ClipboardTyperApp:
         left_frame = ctk.CTkFrame(toolbar_frame, fg_color="transparent")
         left_frame.pack(side="left", padx=(15, 0))
 
-        self.btn_paste = ctk.CTkButton(left_frame, text="从剪贴板粘贴", command=self.paste_from_clipboard, width=140, height=38, font=("Maple Mono NF CN", 11, "bold"))
+        self.btn_paste = ctk.CTkButton(left_frame, text="从剪贴板粘贴", command=self.paste_from_clipboard, width=140, height=38, font=FontManager.button())
         self.btn_paste.pack(side="left", padx=(0, 10), pady=10)
 
-        self.btn_clear = ctk.CTkButton(left_frame, text="清空预览", command=self.clear_preview, width=100, height=38, font=("Maple Mono NF CN", 11), fg_color="gray70", hover_color="gray60")
+        self.btn_clear = ctk.CTkButton(left_frame, text="清空预览", command=self.clear_preview, width=100, height=38, font=FontManager.button_normal(), fg_color="gray70", hover_color="gray60")
         self.btn_clear.pack(side="left", padx=5, pady=10)
 
         right_frame = ctk.CTkFrame(toolbar_frame, fg_color="transparent")
         right_frame.pack(side="right", padx=(0, 15))
 
-        self.btn_start = ctk.CTkButton(right_frame, text="开始", command=self.start_typing, width=75, height=38, font=("Maple Mono NF CN", 11, "bold"), fg_color="#28a745", hover_color="#218838")
+        self.btn_start = ctk.CTkButton(right_frame, text="开始", command=self.start_typing, width=75, height=38, font=FontManager.button(), fg_color="#28a745", hover_color="#218838")
         self.btn_start.pack(side="left", padx=2, pady=10)
 
-        self.btn_pause = ctk.CTkButton(right_frame, text="暂停", command=self.pause_typing, width=75, height=38, font=("Maple Mono NF CN", 11, "bold"), fg_color="#ffc107", hover_color="#e0a800", state="disabled")
+        self.btn_pause = ctk.CTkButton(right_frame, text="暂停", command=self.pause_typing, width=75, height=38, font=FontManager.button(), fg_color="#ffc107", hover_color="#e0a800", state="disabled")
         self.btn_pause.pack(side="left", padx=2, pady=10)
 
-        self.btn_resume = ctk.CTkButton(right_frame, text="继续", command=self.resume_typing, width=75, height=38, font=("Maple Mono NF CN", 11, "bold"), fg_color="#17a2b8", hover_color="#138496", state="disabled")
+        self.btn_resume = ctk.CTkButton(right_frame, text="继续", command=self.resume_typing, width=75, height=38, font=FontManager.button(), fg_color="#17a2b8", hover_color="#138496", state="disabled")
         self.btn_resume.pack(side="left", padx=2, pady=10)
 
-        self.btn_stop = ctk.CTkButton(right_frame, text="停止", command=self.stop_typing, width=75, height=38, font=("Maple Mono NF CN", 11, "bold"), fg_color="#dc3545", hover_color="#c82333", state="disabled")
+        self.btn_stop = ctk.CTkButton(right_frame, text="停止", command=self.stop_typing, width=75, height=38, font=FontManager.get(size=12, weight="bold"), fg_color="#dc3545", hover_color="#c82333", state="disabled")
         self.btn_stop.pack(side="left", padx=2, pady=10)
 
-        self.btn_to_mini = ctk.CTkButton(right_frame, text="mini模式", command=self.toggle_mode, width=55, height=38, font=("Maple Mono NF CN", 11, "bold"), fg_color="#495057", hover_color="#343a40")
+        self.btn_to_mini = ctk.CTkButton(right_frame, text="mini模式", command=self.toggle_mode, width=55, height=38, font=FontManager.get(size=12, weight="bold"), fg_color="#495057", hover_color="#343a40")
         self.btn_to_mini.pack(side="left", padx=(6, 0), pady=10)
 
         toolbar_frame.grid_columnconfigure(0, weight=1)
@@ -96,30 +99,30 @@ class ClipboardTyperApp:
         config_left_frame = ctk.CTkFrame(config_frame, fg_color="transparent")
         config_left_frame.pack(side="left", padx=(15, 0))
 
-        ctk.CTkLabel(config_left_frame, text="字符间隔", font=("Maple Mono NF CN", 11), text_color="gray40").pack(side="left", padx=(0, 5), pady=10)
-        self.entry_delay = ctk.CTkEntry(config_left_frame, width=60, height=32, font=("Maple Mono NF CN", 11))
+        ctk.CTkLabel(config_left_frame, text="字符间隔", font=FontManager.label(), text_color="gray40").pack(side="left", padx=(0, 5), pady=10)
+        self.entry_delay = ctk.CTkEntry(config_left_frame, width=60, height=32, font=FontManager.entry())
         self.entry_delay.insert(0, "50")
         self.entry_delay.pack(side="left", padx=(0, 5))
-        ctk.CTkLabel(config_left_frame, text="ms", font=("Maple Mono NF CN", 10), text_color="gray50").pack(side="left", padx=(0, 20))
+        ctk.CTkLabel(config_left_frame, text="ms", font=FontManager.small(), text_color="gray50").pack(side="left", padx=(0, 20))
 
-        ctk.CTkLabel(config_left_frame, text="开始延时", font=("Maple Mono NF CN", 11), text_color="gray40").pack(side="left", padx=(0, 5))
-        self.entry_start_delay = ctk.CTkEntry(config_left_frame, width=60, height=32, font=("Maple Mono NF CN", 11))
+        ctk.CTkLabel(config_left_frame, text="开始延时", font=FontManager.get(size=12, weight="bold"), text_color="gray40").pack(side="left", padx=(0, 5))
+        self.entry_start_delay = ctk.CTkEntry(config_left_frame, width=60, height=32, font=FontManager.entry())
         self.entry_start_delay.insert(0, "3")
         self.entry_start_delay.pack(side="left", padx=(0, 5))
-        ctk.CTkLabel(config_left_frame, text="秒", font=("Maple Mono NF CN", 10), text_color="gray50").pack(side="left", padx=(0, 20))
+        ctk.CTkLabel(config_left_frame, text="秒", font=FontManager.get(size=10, weight="bold"), text_color="gray50").pack(side="left", padx=(0, 20))
 
         self.smart_indent_var = ctk.BooleanVar(value=True)
-        self.cb_smart_indent = ctk.CTkCheckBox(config_left_frame, text="智能缩进", variable=self.smart_indent_var, font=("Maple Mono NF CN", 11), command=self._on_smart_indent_toggle, onvalue=True, offvalue=False)
+        self.cb_smart_indent = ctk.CTkCheckBox(config_left_frame, text="智能缩进", variable=self.smart_indent_var, font=FontManager.get(size=12, weight="bold"), command=self._on_smart_indent_toggle, onvalue=True, offvalue=False)
         self.cb_smart_indent.pack(side="left", padx=(0, 15))
 
-        ctk.CTkLabel(config_left_frame, text="缩进宽度", font=("Maple Mono NF CN", 11), text_color="gray40").pack(side="left", padx=(0, 5))
-        self.entry_indent_size = ctk.CTkEntry(config_left_frame, width=50, height=32, font=("Maple Mono NF CN", 11))
+        ctk.CTkLabel(config_left_frame, text="缩进宽度", font=FontManager.label(), text_color="gray40").pack(side="left", padx=(0, 5))
+        self.entry_indent_size = ctk.CTkEntry(config_left_frame, width=50, height=32, font=FontManager.entry())
         self.entry_indent_size.insert(0, "4")
         self.entry_indent_size.pack(side="left", padx=(0, 10))
 
         config_right_frame = ctk.CTkFrame(config_frame, fg_color="transparent")
         config_right_frame.pack(side="right", padx=(0, 15), pady=10)
-        ctk.CTkLabel(config_right_frame, text="快捷键: Ctrl+Shift+P 开始/继续 | Ctrl+Shift+L 暂停", font=("Maple Mono NF CN", 10), text_color="gray50").pack(side="left")
+        ctk.CTkLabel(config_right_frame, text="快捷键: Ctrl+Shift+P 开始/继续 | Ctrl+Shift+L 暂停", font=FontManager.get(size=12, weight="bold"), text_color="gray50").pack(side="left")
 
         help_frame = ctk.CTkFrame(self.main_frame, corner_radius=10)
         help_frame.pack(padx=15, pady=(0, 12), fill="x")
@@ -143,13 +146,13 @@ class ClipboardTyperApp:
                      "  缩进宽度可配置（默认 4 空格），适配 Python/C++/HTML 等。\n\n"
                      "  「迷你」模式：隐藏预览区和提示区，仅保留核心操作按钮。\n"
                      "  迷你模式自动置顶，始终显示在最上层，推荐配合做题使用。")
-        ctk.CTkLabel(help_left_frame, text=help_text, font=("Maple Mono NF CN", 11), text_color="#e0e0e0", justify="left").pack(fill="both", expand=True)
+        ctk.CTkLabel(help_left_frame, text=help_text, font=FontManager.get(size=12, weight="bold"), text_color="#e0e0e0", justify="left").pack(fill="both", expand=True)
 
         help_right_frame = ctk.CTkFrame(help_frame, fg_color="#2d2d2d", corner_radius=10, width=120)
         help_right_frame.pack(side="right", padx=(0, 15), pady=10, fill="y")
         help_right_frame.pack_propagate(False)
 
-        about_label = ctk.CTkLabel(help_right_frame, text="关于作者", font=("Maple Mono NF CN", 11, "bold"), text_color="#667eea")
+        about_label = ctk.CTkLabel(help_right_frame, text="关于作者", font=FontManager.button(), text_color="#667eea")
         about_label.pack(pady=(12, 6))
 
         avatar_frame = ctk.CTkFrame(help_right_frame, fg_color="#3d3d3d", corner_radius=8)
@@ -172,11 +175,11 @@ class ClipboardTyperApp:
         avatar_label.pack(padx=6, pady=6)
         avatar_label.bind("<Button-1>", lambda e: webbrowser.open("https://www.kaizs.cn"))
 
-        name_label = ctk.CTkLabel(help_right_frame, text="凯Z闪 (KaiZs)", font=("Maple Mono NF CN", 12, "bold"), text_color="#e0e0e0", cursor="hand2")
+        name_label = ctk.CTkLabel(help_right_frame, text="凯Z闪 (KaiZs)", font=FontManager.get(size=12, weight="bold"), text_color="#e0e0e0", cursor="hand2")
         name_label.pack(pady=(4, 2))
         name_label.bind("<Button-1>", lambda e: webbrowser.open("https://www.kaizs.cn"))
 
-        link_label = ctk.CTkLabel(help_right_frame, text="操作提示", font=("Maple Mono NF CN", 10), text_color="#667eea", cursor="hand2")
+        link_label = ctk.CTkLabel(help_right_frame, text="操作提示", font=FontManager.get(size=12, weight="bold"), text_color="#667eea", cursor="hand2")
         link_label.pack(pady=(0, 12))
         link_label.bind("<Button-1>", lambda e: webbrowser.open("https://www.kaizs.cn/fakeypastehelp.html"))
 
@@ -186,20 +189,20 @@ class ClipboardTyperApp:
         text_top_frame = ctk.CTkFrame(text_frame, fg_color="transparent")
         text_top_frame.pack(padx=15, pady=(15, 0), fill="x")
 
-        self.btn_remove_indent = ctk.CTkButton(text_top_frame, text="清空缩进", command=self.remove_indentation, width=80, height=28, font=("Maple Mono NF CN", 10), fg_color="#495057", hover_color="#343a40")
+        self.btn_remove_indent = ctk.CTkButton(text_top_frame, text="清空缩进", command=self.remove_indentation, width=80, height=28, font=FontManager.get(size=12, weight="bold"), fg_color="#495057", hover_color="#343a40")     
         self.btn_remove_indent.pack(side="right", padx=(5, 5))
 
         self.btn_lock = ctk.CTkButton(text_top_frame, text="🔒", command=self.toggle_lock, width=32, height=28, font=("Segoe UI", 14), fg_color="#495057", hover_color="#343a40")
         self.btn_lock.pack(side="right")
 
-        self.text_area = ctk.CTkTextbox(text_frame, font=("Maple Mono NF CN", 12), corner_radius=8)
+        self.text_area = ctk.CTkTextbox(text_frame, font=FontManager.textbox(), corner_radius=8)
         self.text_area.pack(padx=15, pady=(5, 15), fill="both", expand=True)
 
         bottom_frame = ctk.CTkFrame(self.main_frame, corner_radius=10)
         bottom_frame.pack(padx=15, pady=(0, 12), fill="x")
-        self.btn_copy = ctk.CTkButton(bottom_frame, text="复制预览到剪贴板", command=self.copy_preview_to_clipboard, width=180, height=36, font=("Maple Mono NF CN", 11), fg_color="gray70", hover_color="gray60")
+        self.btn_copy = ctk.CTkButton(bottom_frame, text="复制预览到剪贴板", command=self.copy_preview_to_clipboard, width=180, height=36, font=FontManager.button_normal(), fg_color="gray70", hover_color="gray60")
         self.btn_copy.pack(side="left", padx=(15, 10), pady=10)
-        self.char_count = ctk.CTkLabel(bottom_frame, text="字符数: 0", font=("Maple Mono NF CN", 11), text_color="gray40")
+        self.char_count = ctk.CTkLabel(bottom_frame, text="字符数: 0", font=FontManager.entry(), text_color="gray40")
         self.char_count.pack(side="right", padx=(0, 15), pady=10)
 
     def _setup_mini_ui(self):
@@ -228,10 +231,10 @@ class ClipboardTyperApp:
             w.bind("<Button-1>", self._start_grip_drag)
             w.bind("<B1-Motion>", self._do_grip_drag)
 
-        self.btn_paste_mini = ctk.CTkButton(mini_left, text="粘贴", command=self.paste_from_clipboard, width=60, height=30, font=("Maple Mono NF CN", 11, "bold"))
+        self.btn_paste_mini = ctk.CTkButton(mini_left, text="粘贴", command=self.paste_from_clipboard, width=60, height=30, font=FontManager.button())
         self.btn_paste_mini.pack(side="left", padx=(0, 5))
 
-        self.btn_clear_mini = ctk.CTkButton(mini_left, text="清空", command=self.clear_preview, width=50, height=30, font=("Maple Mono NF CN", 11), fg_color="gray70", hover_color="gray60")
+        self.btn_clear_mini = ctk.CTkButton(mini_left, text="清空", command=self.clear_preview, width=50, height=30, font=FontManager.button_normal(), fg_color="gray70", hover_color="gray60")
         self.btn_clear_mini.pack(side="left", padx=5)
 
         center = ctk.CTkFrame(row_frame, fg_color="transparent")
@@ -240,33 +243,33 @@ class ClipboardTyperApp:
             w.bind("<Button-1>", self._start_grip_drag)
             w.bind("<B1-Motion>", self._do_grip_drag)
 
-        title = ctk.CTkLabel(center, text="FakeyPaste", font=("Maple Mono NF CN", 14, "bold"), text_color="#667eea", anchor="w")
+        title = ctk.CTkLabel(center, text="FakeyPaste", font=FontManager.get(size=14, weight="bold"), text_color="#667eea", anchor="w")
         title.pack(anchor="w", padx=(10, 0))
         title.bind("<Button-1>", self._start_grip_drag)
         title.bind("<B1-Motion>", self._do_grip_drag)
 
-        subtitle = ctk.CTkLabel(center, text="by KaiZs", font=("Maple Mono NF CN", 9), text_color="gray50", anchor="e")
+        subtitle = ctk.CTkLabel(center, text="by KaiZs", font=FontManager.get(size=9, weight="normal"), text_color="gray50", anchor="e")
         subtitle.pack(anchor="e", padx=(0, 10))
 
         mini_right = ctk.CTkFrame(row_frame, fg_color="transparent")
         mini_right.pack(side="right", padx=(0, 5))
 
-        self.btn_start_mini = ctk.CTkButton(mini_right, text="开始", command=self.start_typing, width=50, height=30, font=("Maple Mono NF CN", 11, "bold"), fg_color="#28a745", hover_color="#218838")
+        self.btn_start_mini = ctk.CTkButton(mini_right, text="开始", command=self.start_typing, width=50, height=30, font=FontManager.button(), fg_color="#28a745", hover_color="#218838")
         self.btn_start_mini.pack(side="left", padx=2)
 
-        self.btn_pause_mini = ctk.CTkButton(mini_right, text="暂停", command=self.pause_typing, width=50, height=30, font=("Maple Mono NF CN", 11, "bold"), fg_color="#ffc107", hover_color="#e0a800", state="disabled")
+        self.btn_pause_mini = ctk.CTkButton(mini_right, text="暂停", command=self.pause_typing, width=50, height=30, font=FontManager.button(), fg_color="#ffc107", hover_color="#e0a800", state="disabled")
         self.btn_pause_mini.pack(side="left", padx=2)
 
-        self.btn_resume_mini = ctk.CTkButton(mini_right, text="继续", command=self.resume_typing, width=50, height=30, font=("Maple Mono NF CN", 11, "bold"), fg_color="#17a2b8", hover_color="#138496", state="disabled")
+        self.btn_resume_mini = ctk.CTkButton(mini_right, text="继续", command=self.resume_typing, width=50, height=30, font=FontManager.button(), fg_color="#17a2b8", hover_color="#138496", state="disabled")
         self.btn_resume_mini.pack(side="left", padx=2)
 
-        self.btn_stop_mini = ctk.CTkButton(mini_right, text="停止", command=self.stop_typing, width=50, height=30, font=("Maple Mono NF CN", 11, "bold"), fg_color="#dc3545", hover_color="#c82333", state="disabled")
+        self.btn_stop_mini = ctk.CTkButton(mini_right, text="停止", command=self.stop_typing, width=50, height=30, font=FontManager.button(), fg_color="#dc3545", hover_color="#c82333", state="disabled")
         self.btn_stop_mini.pack(side="left", padx=2)
 
         ctrl = ctk.CTkFrame(row_frame, fg_color="transparent")
         ctrl.pack(side="right", padx=(4, 10))
 
-        btn_res = ctk.CTkButton(ctrl, text="展开", command=self.toggle_mode, width=50, height=30, font=("Maple Mono NF CN", 11, "bold"), fg_color="#28a745", hover_color="#218838")
+        btn_res = ctk.CTkButton(ctrl, text="展开", command=self.toggle_mode, width=50, height=30, font=FontManager.get(size=12, weight="bold"), fg_color="#28a745", hover_color="#218838")
         btn_res.pack(side="left")
 
         self._left_edge = ctk.CTkFrame(self.mini_frame, width=6, height=30, fg_color="transparent")

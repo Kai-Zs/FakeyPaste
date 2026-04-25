@@ -5,91 +5,76 @@ import customtkinter as ctk
 
 class FontManager:
     _fonts = {}
-    _font_registered = False
+    _registered = False
 
-    @staticmethod
-    def _get_resource_path(relative_path):
+    FAMILY = "Maple Mono NF CN"
+    FALLBACK = "Segoe UI"
+
+    @classmethod
+    def _resource(cls, relative_path):
         try:
-            base_path = sys._MEIPASS
+            return os.path.join(sys._MEIPASS, relative_path)
         except Exception:
-            base_path = os.path.dirname(os.path.abspath(__file__))
-        return os.path.join(base_path, relative_path)
+            return os.path.join(os.path.dirname(os.path.abspath(__file__)), relative_path)
 
-    @staticmethod
-    def _register_fonts():
-        if FontManager._font_registered:
+    @classmethod
+    def register(cls):
+        if cls._registered:
             return
 
-        try:
-            root = ctk.CTkFont._tkinter_root()
-            
-            font_files = [
-                "fonts/MAPLEMONO-NF-CN-REGULAR.TTF",
-                "fonts/MAPLEMONO-NF-CN-BOLD.TTF"
-            ]
+        cls._registered = True
 
-            for font_file in font_files:
-                font_path = FontManager._get_resource_path(font_file)
-                if os.path.exists(font_path):
-                    try:
-                        root.tk.call("font", "addfont", font_path)
-                    except:
-                        pass
+        if sys.platform != "win32":
+            return
 
-            FontManager._font_registered = True
-        except Exception:
-            pass
+        import ctypes
+        for name in ("MAPLEMONO-NF-CN-REGULAR.TTF", "MAPLEMONO-NF-CN-BOLD.TTF"):
+            path = cls._resource(f"fonts/{name}")
+            if not os.path.isfile(path):
+                continue
+            try:
+                ctypes.windll.gdi32.AddFontResourceExW(ctypes.c_wchar_p(path), 0x10, None)
+            except Exception:
+                pass
 
-    @staticmethod
-    def get_font(size=12, weight="normal"):
-        FontManager._register_fonts()
-
-        font_key = f"{size}_{weight}"
-
-        if font_key in FontManager._fonts:
-            return FontManager._fonts[font_key]
+    @classmethod
+    def get(cls, size=12, weight="normal"):
+        key = (size, weight)
+        if key in cls._fonts:
+            return cls._fonts[key]
 
         try:
-            fonts_available = ctk.CTkFont._tkinter_root().tk.call("font", "families")
-
-            maple_fonts = [f for f in fonts_available 
-                          if "Maple" in str(f) or "maple" in str(f).lower()]
-            
-            if maple_fonts:
-                font_family = maple_fonts[0]
-                custom_font = ctk.CTkFont(family=font_family, size=size, weight=weight)
-                FontManager._fonts[font_key] = custom_font
-                return custom_font
-            else:
-                return ctk.CTkFont(family="Segoe UI", size=size, weight=weight)
-
+            f = ctk.CTkFont(family=cls.FAMILY, size=size, weight=weight)
         except Exception:
-            return ctk.CTkFont(family="Segoe UI", size=size, weight=weight)
+            f = ctk.CTkFont(family=cls.FALLBACK, size=size, weight=weight)
 
-    @staticmethod
-    def title_font():
-        return FontManager.get_font(size=20, weight="bold")
+        cls._fonts[key] = f
+        return f
 
-    @staticmethod
-    def button_font():
-        return FontManager.get_font(size=11, weight="bold")
+    @classmethod
+    def title(cls):
+        return cls.get(20, "bold")
 
-    @staticmethod
-    def button_regular_font():
-        return FontManager.get_font(size=11, weight="normal")
+    @classmethod
+    def button(cls):
+        return cls.get(11, "bold")
 
-    @staticmethod
-    def label_font():
-        return FontManager.get_font(size=11, weight="normal")
+    @classmethod
+    def button_normal(cls):
+        return cls.get(11, "normal")
 
-    @staticmethod
-    def small_label_font():
-        return FontManager.get_font(size=10, weight="normal")
+    @classmethod
+    def label(cls):
+        return cls.get(11, "normal")
 
-    @staticmethod
-    def entry_font():
-        return FontManager.get_font(size=11, weight="normal")
+    @classmethod
+    def small(cls):
+        return cls.get(10, "normal")
 
-    @staticmethod
-    def textbox_font():
-        return FontManager.get_font(size=12, weight="normal")
+    @classmethod
+    def entry(cls):
+        return cls.get(11, "normal")
+
+    @classmethod
+    def textbox(cls):
+        return cls.get(12, "normal")
