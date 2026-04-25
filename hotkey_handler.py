@@ -6,12 +6,10 @@ except Exception:
 
 class HotkeyHandler:
     def __init__(self):
-        self._start_callback = None
         self._pause_callback = None
         self._resume_callback = None
 
     def set_callbacks(self, start_callback, pause_callback, resume_callback):
-        self._start_callback = start_callback
         self._pause_callback = pause_callback
         self._resume_callback = resume_callback
 
@@ -36,7 +34,7 @@ class HotkeyHandler:
         try:
             keyboard.remove_hotkey('ctrl+shift+p')
             keyboard.remove_hotkey('ctrl+shift+l')
-        except:
+        except Exception:
             pass
 
     def _on_start_resume_hotkey(self):
@@ -46,9 +44,3 @@ class HotkeyHandler:
     def _on_pause_hotkey(self):
         if self._pause_callback:
             self._pause_callback()
-
-    def override_start_callback(self, callback):
-        self._start_callback = callback
-
-    def override_resume_callback(self, callback):
-        self._resume_callback = callback

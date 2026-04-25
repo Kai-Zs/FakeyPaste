@@ -2,6 +2,7 @@ import customtkinter as ctk
 from tkinter import messagebox
 import webbrowser
 import os
+import sys
 
 from typing_engine import TypingEngine
 from clipboard_manager import ClipboardManager
@@ -96,7 +97,18 @@ class ClipboardTyperApp:
         self.entry_start_delay.pack(side="left", padx=(0, 5))
         ctk.CTkLabel(config_left_frame, text="秒", font=("Maple Mono NF CN", 10), text_color="gray50").pack(side="left", padx=(0, 20))
 
-        ctk.CTkLabel(config_frame, text="快捷键: Ctrl+Shift+P 开始/继续 | Ctrl+Shift+L 暂停", font=("Maple Mono NF CN", 10), text_color="gray50").pack(side="right", padx=(0, 15), pady=10)
+        self.smart_indent_var = ctk.BooleanVar(value=True)
+        self.cb_smart_indent = ctk.CTkCheckBox(config_left_frame, text="智能缩进", variable=self.smart_indent_var, font=("Maple Mono NF CN", 11), command=self._on_smart_indent_toggle, onvalue=True, offvalue=False)
+        self.cb_smart_indent.pack(side="left", padx=(0, 15))
+
+        ctk.CTkLabel(config_left_frame, text="缩进宽度", font=("Maple Mono NF CN", 11), text_color="gray40").pack(side="left", padx=(0, 5))
+        self.entry_indent_size = ctk.CTkEntry(config_left_frame, width=50, height=32, font=("Maple Mono NF CN", 11))
+        self.entry_indent_size.insert(0, "4")
+        self.entry_indent_size.pack(side="left", padx=(0, 10))
+
+        config_right_frame = ctk.CTkFrame(config_frame, fg_color="transparent")
+        config_right_frame.pack(side="right", padx=(0, 15), pady=10)
+        ctk.CTkLabel(config_right_frame, text="快捷键: Ctrl+Shift+P 开始/继续 | Ctrl+Shift+L 暂停", font=("Maple Mono NF CN", 10), text_color="gray50").pack(side="left")
 
         help_frame = ctk.CTkFrame(self.main_frame, corner_radius=10)
         help_frame.pack(padx=15, pady=(0, 12), fill="x")
@@ -111,8 +123,10 @@ class ClipboardTyperApp:
                      "  4. 输入中按 Ctrl+Shift+L 或点击「暂停」暂停\n"
                      "  5. 暂停后按 Ctrl+Shift+P 或点击「继续」恢复\n"
                      "  6. 点击「停止」可随时中止输入\n\n"
-                     "  在阿尔法平台上使用时，复制代码后请点击「清空缩进」按钮再继续，\n"
-                     "  因为平台 IDE 会自动添加缩进，避免重复缩进导致代码格式错误。")
+                     "  智能缩进模式（默认开启）：\n"
+                     "  保留代码原始缩进，使用 Shift+Enter 换行跳过 IDE 自动缩进，\n"
+                     "  精确还原每一行的缩进层级。无需手动「清空缩进」。\n"
+                     "  缩进宽度可配置（默认 4 空格），适配 Python/C++/HTML 等。")
         ctk.CTkLabel(help_left_frame, text=help_text, font=("Maple Mono NF CN", 11), text_color="#e0e0e0", justify="left").pack(fill="both", expand=True)
         
         help_right_frame = ctk.CTkFrame(help_frame, fg_color="#2d2d2d", corner_radius=10, width=120)
@@ -125,7 +139,6 @@ class ClipboardTyperApp:
         avatar_frame = ctk.CTkFrame(help_right_frame, fg_color="#3d3d3d", corner_radius=8)
         avatar_frame.grid(row=0, column=0, padx=10, pady=(10, 5), sticky="nsew")
         
-        import sys
         avatar_path = os.path.join(os.path.dirname(__file__), "avatar.jpg")
         if not os.path.exists(avatar_path) and hasattr(sys, '_MEIPASS'):
             avatar_path = os.path.join(sys._MEIPASS, "avatar.jpg")
@@ -198,8 +211,6 @@ class ClipboardTyperApp:
             messagebox.showwarning("依赖缺失", "未检测到 keyboard 模块，请安装：\npip install keyboard")
 
     def _set_window_icon(self):
-        import os
-        import sys
         icon_path = os.path.join(os.path.dirname(__file__), "app_icon.ico")
         
         if hasattr(sys, '_MEIPASS'):
@@ -293,7 +304,7 @@ class ClipboardTyperApp:
         if "完成" in text:
             self.status_indicator.configure(text_color="#28a745")
             self._set_idle_state()
-        elif "输入中" in text or "倒计时" in text or "开始输入" in text or "准备输入" in text:
+        elif "输入中" in text or "倒计时" in text or "开始输入" in text or "准备输入" in text or "智能输入" in text:
             self.status_indicator.configure(text_color="#ffc107")
             self._set_typing_state()
         elif "暂停" in text:
@@ -359,6 +370,12 @@ class ClipboardTyperApp:
         else:
             self.lock_preview()
 
+    def _on_smart_indent_toggle(self):
+        if self.smart_indent_var.get():
+            self.entry_indent_size.configure(state="normal")
+        else:
+            self.entry_indent_size.configure(state="disabled")
+
     def lock_preview(self):
         self.is_locked = True
         self.text_area.configure(state="disabled")
@@ -375,18 +392,23 @@ class ClipboardTyperApp:
         if self.is_locked:
             messagebox.showinfo("提示", "预览区已锁定，请先解锁")
             return
+        try:
+            size = int(self.entry_indent_size.get())
+        except ValueError:
+            size = 4
+        indent_str = ' ' * size
         text = self.text_area.get("1.0", "end").rstrip("\n")
         lines = text.split("\n")
         processed_lines = []
         for line in lines:
-            while line.startswith("    "):
-                line = line[4:]
+            while line.startswith(indent_str):
+                line = line[size:]
             processed_lines.append(line)
         new_text = "\n".join(processed_lines)
         self.text_area.delete("1.0", "end")
         self.text_area.insert("1.0", new_text)
         self.update_char_count()
-        self.set_status('已清空所有行首缩进')
+        self.set_status(f'已清空所有行首缩进（缩进宽度={size}）')
 
     def start_typing(self):
         if not self.typing_engine.is_available():
@@ -410,13 +432,24 @@ class ClipboardTyperApp:
         try:
             delay_ms = float(self.entry_delay.get())
             start_delay = float(self.entry_start_delay.get())
+            smart_indent = self.smart_indent_var.get()
+            indent_size = int(self.entry_indent_size.get())
         except ValueError:
-            messagebox.showerror("输入错误", "延时必须为数字")
+            messagebox.showerror("输入错误", "延时和缩进宽度必须为数字")
             return
 
         try:
-            self.set_status(f'将在 {start_delay} 秒后开始输入，请切换到目标窗口')
-            self.typing_engine.start_typing(text, per_char_delay=delay_ms / 1000.0, start_delay=start_delay)
+            if smart_indent:
+                self.set_status(f'将在 {start_delay} 秒后开始智能缩进输入，请切换到目标窗口')
+            else:
+                self.set_status(f'将在 {start_delay} 秒后开始输入，请切换到目标窗口')
+            self.typing_engine.start_typing(
+                text,
+                per_char_delay=delay_ms / 1000.0,
+                start_delay=start_delay,
+                smart_indent=smart_indent,
+                indent_size=indent_size
+            )
         except RuntimeError as e:
             messagebox.showinfo("提示", str(e))
 
