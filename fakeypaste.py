@@ -74,7 +74,7 @@ class ClipboardTyperApp:
         self.mode_switch.set("简要模式")
         self.mode_switch.pack(side="left", padx=(15, 0), pady=12)
 
-        title_label = ctk.CTkLabel(title_frame, text="FakeyPaste", font=FontManager.get(size=16, weight="bold"), text_color="white")
+        title_label = ctk.CTkLabel(title_frame, text="FakeyPaste v2.0", font=FontManager.get(size=16, weight="bold"), text_color="white")
         title_label.place(relx=0.5, rely=0.5, anchor="center")
 
         self.toolbar_advanced = ctk.CTkFrame(self.main_frame, corner_radius=10)

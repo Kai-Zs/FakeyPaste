@@ -11,6 +11,7 @@
 
       <div class="footer-links">
         <a href="https://www.kaizs.cn" target="_blank" rel="noopener">作者主页</a>
+        <a href="./changelog.html">更新历史</a>
         <a href="https://www.kaizs.cn/fakeypastehelp.html" target="_blank" rel="noopener">在线帮助</a>
         <a href="https://github.com/Kai-Zs/FakeyPaste" target="_blank" rel="noopener">GitHub</a>
       </div>
