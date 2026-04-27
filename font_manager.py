@@ -52,29 +52,29 @@ class FontManager:
         return f
 
     @classmethod
-    def title(cls):
+    def title_font(cls):
         return cls.get(20, "bold")
 
     @classmethod
-    def button(cls):
+    def button_font(cls):
         return cls.get(11, "bold")
 
     @classmethod
-    def button_normal(cls):
+    def button_regular_font(cls):
         return cls.get(11, "normal")
 
     @classmethod
-    def label(cls):
+    def label_font(cls):
         return cls.get(11, "normal")
 
     @classmethod
-    def small(cls):
+    def small_label_font(cls):
         return cls.get(10, "normal")
 
     @classmethod
-    def entry(cls):
+    def entry_font(cls):
         return cls.get(11, "normal")
 
     @classmethod
-    def textbox(cls):
+    def textbox_font(cls):
         return cls.get(12, "normal")

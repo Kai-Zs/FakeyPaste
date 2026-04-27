@@ -9,6 +9,16 @@ except Exception:
 
 
 class TypingEngine:
+    _STATUS_READY = '就绪'
+    _STATUS_PREPARING = '准备输入'
+    _STATUS_COUNTING_DOWN = '倒计时'
+    _STATUS_TYPING = '输入中'
+    _STATUS_SMART_TYPING = '智能输入'
+    _STATUS_PAUSED = '已暂停'
+    _STATUS_STOPPED = '已停止'
+    _STATUS_CANCELLED = '已取消'
+    _STATUS_COMPLETED = '完成'
+
     def __init__(self):
         self._typing_thread = None
         self._stop_flag = threading.Event()
@@ -90,13 +100,13 @@ class TypingEngine:
     def _handle_pause_resume(self, total, count):
         while self._pause_flag.is_set() and not self._stop_flag.is_set():
             pct = (count / total) * 100
-            self._safe_set_status(f'【已暂停】已输入 {count}/{total} ({pct:.0f}%)')
+            self._safe_set_status(f'【{self._STATUS_PAUSED}】已输入 {count}/{total} ({pct:.0f}%)')
             time.sleep(0.2)
 
         if hasattr(self, '_resume_delay') and self._resume_delay > 0:
             remaining = self._resume_delay
             delattr(self, '_resume_delay')
-            self._countdown('继续倒计时', remaining)
+            self._countdown(self._STATUS_COUNTING_DOWN, remaining)
 
     def _normalize_common_indent(self, lines):
         min_indent = None
@@ -122,12 +132,12 @@ class TypingEngine:
             self._normalize_common_indent(lines)
             total_lines = len(lines)
 
-            self._safe_set_status(f'【准备输入】共 {total_lines} 行代码 (智能缩进模式, 缩进宽度={indent_size})')
+            self._safe_set_status(f'【{self._STATUS_PREPARING}】共 {total_lines} 行代码 (智能缩进模式, 缩进宽度={indent_size})')
 
-            self._countdown('倒计时', start_delay)
+            self._countdown(self._STATUS_COUNTING_DOWN, start_delay)
 
             if self._stop_flag.is_set():
-                self._safe_set_status('【已取消】输入已取消')
+                self._safe_set_status(f'【{self._STATUS_CANCELLED}】输入已取消')
                 return
 
             total_chars = sum(len(line.rstrip('\n').rstrip('\r').lstrip()) for line in lines)
@@ -135,7 +145,7 @@ class TypingEngine:
 
             for line_idx, line in enumerate(lines):
                 if self._stop_flag.is_set():
-                    self._safe_set_status(f'【已停止】已完成 {line_idx}/{total_lines} 行')
+                    self._safe_set_status(f'【{self._STATUS_STOPPED}】已完成 {line_idx}/{total_lines} 行')
                     break
 
                 self._handle_pause_resume(total_lines, line_idx)
@@ -147,7 +157,7 @@ class TypingEngine:
                 if stripped_line.strip() == '':
                     keyboard.press_and_release('shift+enter')
                     time.sleep(per_char_delay)
-                    self._safe_set_status(f'【智能输入】第 {line_idx + 1}/{total_lines} 行 (空行)')
+                    self._safe_set_status(f'【{self._STATUS_SMART_TYPING}】第 {line_idx + 1}/{total_lines} 行 (空行)')
                     continue
 
                 target_indent = len(stripped_line) - len(stripped_line.lstrip())
@@ -171,7 +181,7 @@ class TypingEngine:
                     time.sleep(per_char_delay)
                     if typed_chars % 3 == 0 or typed_chars == total_chars:
                         pct = (typed_chars / total_chars) * 100
-                        self._safe_set_status(f'【智能输入】{typed_chars}/{total_chars} 字符 ({pct:.0f}%) | 第 {line_idx + 1}/{total_lines} 行')
+                        self._safe_set_status(f'【{self._STATUS_SMART_TYPING}】{typed_chars}/{total_chars} 字符 ({pct:.0f}%) | 第 {line_idx + 1}/{total_lines} 行')
 
                 if self._stop_flag.is_set():
                     break
@@ -181,7 +191,7 @@ class TypingEngine:
                     time.sleep(per_char_delay)
 
             if not self._stop_flag.is_set():
-                self._safe_set_status(f'【完成】已成功输入 {total_lines} 行代码！')
+                self._safe_set_status(f'【{self._STATUS_COMPLETED}】已成功输入 {total_lines} 行代码！')
         finally:
             self._stop_flag.clear()
             self._pause_flag.clear()
@@ -189,20 +199,20 @@ class TypingEngine:
     def _typing_worker(self, text, per_char_delay, start_delay):
         try:
             total_chars = len(text)
-            self._safe_set_status(f'【准备输入】共 {total_chars} 个字符')
+            self._safe_set_status(f'【{self._STATUS_PREPARING}】共 {total_chars} 个字符')
 
-            self._countdown('倒计时', start_delay)
+            self._countdown(self._STATUS_COUNTING_DOWN, start_delay)
 
             if self._stop_flag.is_set():
-                self._safe_set_status('【已取消】输入已取消')
+                self._safe_set_status(f'【{self._STATUS_CANCELLED}】输入已取消')
                 return
 
-            self._safe_set_status('【开始输入】正在模拟键盘输入...')
+            self._safe_set_status(f'【{self._STATUS_TYPING}】正在模拟键盘输入...')
 
             typed = 0
             for ch in text:
                 if self._stop_flag.is_set():
-                    self._safe_set_status(f'【已停止】已输入 {typed}/{total_chars} 个字符 ({typed / total_chars * 100:.0f}%)')
+                    self._safe_set_status(f'【{self._STATUS_STOPPED}】已输入 {typed}/{total_chars} 个字符 ({typed / total_chars * 100:.0f}%)')
                     break
 
                 self._handle_pause_resume(total_chars, typed)
@@ -214,9 +224,9 @@ class TypingEngine:
                 time.sleep(per_char_delay)
 
                 if typed % 2 == 0 or typed == total_chars:
-                    self._safe_set_status(f'【输入中】{typed}/{total_chars} 字符 ({typed / total_chars * 100:.0f}%)')
+                    self._safe_set_status(f'【{self._STATUS_TYPING}】{typed}/{total_chars} 字符 ({typed / total_chars * 100:.0f}%)')
             else:
-                self._safe_set_status(f'【完成】已成功输入 {total_chars} 个字符！')
+                self._safe_set_status(f'【{self._STATUS_COMPLETED}】已成功输入 {total_chars} 个字符！')
         finally:
             self._stop_flag.clear()
             self._pause_flag.clear()

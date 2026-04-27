@@ -6,12 +6,12 @@ except Exception:
 
 class HotkeyHandler:
     def __init__(self):
+        self._start_resume_callback = None
         self._pause_callback = None
-        self._resume_callback = None
 
-    def set_callbacks(self, start_callback, pause_callback, resume_callback):
+    def set_callbacks(self, start_resume_callback, pause_callback):
+        self._start_resume_callback = start_resume_callback
         self._pause_callback = pause_callback
-        self._resume_callback = resume_callback
 
     def is_available(self):
         return keyboard is not None
@@ -38,8 +38,8 @@ class HotkeyHandler:
             pass
 
     def _on_start_resume_hotkey(self):
-        if self._resume_callback:
-            self._resume_callback()
+        if self._start_resume_callback:
+            self._start_resume_callback()
 
     def _on_pause_hotkey(self):
         if self._pause_callback:

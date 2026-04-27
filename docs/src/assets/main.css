@@ -1,0 +1,185 @@
+@font-face {
+  font-family: 'Maple Mono NF CN';
+  src: url('/fonts/MAPLEMONO-NF-CN-REGULAR.TTF') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Maple Mono NF CN';
+  src: url('/fonts/MAPLEMONO-NF-CN-BOLD.TTF') format('truetype');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+:root {
+  --font-mono: 'Maple Mono NF CN', 'Fira Code', 'Cascadia Code', 'Consolas', monospace;
+
+  --bg-color: #282a36;
+  --bg-glass: rgba(40, 42, 54, 0.45);
+  --bg-glass-light: rgba(68, 71, 90, 0.35);
+  --bg-card: rgba(40, 42, 54, 0.55);
+  --bg-card-hover: rgba(40, 42, 54, 0.75);
+
+  --text-color: #f8f8f2;
+  --text-secondary: #d0d0d0;
+  --text-muted: #6272a4;
+
+  --border-color: #44475a;
+  --border-glass: rgba(255, 255, 255, 0.08);
+
+  --primary: #ff5555;
+  --primary-glow: rgba(255, 85, 85, 0.6);
+  --secondary: #bd93f9;
+  --secondary-glow: rgba(189, 147, 249, 0.5);
+  --accent: #8be9fd;
+  --accent-glow: rgba(139, 233, 253, 0.4);
+
+  --code-keyword: #ff79c6;
+  --code-function: #50fa7b;
+  --code-string: #f1fa8c;
+  --code-comment: #6272a4;
+  --code-property: #66d9ef;
+  --code-value: #bd93f9;
+
+  --green: #50fa7b;
+
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 20px;
+
+  --shadow-glow: 0 0 20px var(--primary-glow);
+  --shadow-card: 0 4px 24px rgba(0, 0, 0, 0.3);
+  --shadow-card-hover: 0 8px 40px rgba(0, 0, 0, 0.45);
+
+  --font-family: 'Maple Mono NF CN', 'Segoe UI', system-ui, -apple-system, sans-serif;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: var(--font-family);
+  background: var(--bg-color);
+  color: var(--text-color);
+  line-height: 1.8;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+body::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background:
+    radial-gradient(ellipse at 20% 50%, rgba(255, 85, 85, 0.08) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 20%, rgba(139, 233, 253, 0.06) 0%, transparent 50%),
+    radial-gradient(ellipse at 50% 80%, rgba(189, 147, 249, 0.06) 0%, transparent 50%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+#app {
+  position: relative;
+  z-index: 1;
+}
+
+.glass {
+  background: var(--bg-glass);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--border-glass);
+  border-radius: var(--radius-md);
+}
+
+.glass-card {
+  background: var(--bg-card);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--border-glass);
+  border-radius: var(--radius-md);
+  transition: all 0.3s ease;
+}
+
+.glass-card:hover {
+  background: var(--bg-card-hover);
+  border-color: rgba(255, 255, 255, 0.15);
+  box-shadow: var(--shadow-card-hover);
+  transform: translateY(-2px);
+}
+
+.section-title {
+  font-size: 2rem;
+  font-weight: 700;
+  text-align: center;
+  margin-bottom: 3rem;
+  color: var(--text-color);
+  position: relative;
+}
+
+.section-title::after {
+  content: '';
+  display: block;
+  width: 60px;
+  height: 3px;
+  background: linear-gradient(90deg, var(--primary), var(--accent));
+  margin: 1rem auto 0;
+  border-radius: 2px;
+}
+
+.container {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 0 2rem;
+}
+
+a {
+  color: var(--accent);
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+a:hover {
+  color: var(--secondary);
+}
+
+kbd {
+  display: inline-block;
+  padding: 0.15em 0.6em;
+  font-family: var(--font-mono);
+  font-size: 0.85em;
+  color: var(--text-color);
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid var(--border-glass);
+  border-radius: 4px;
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+code {
+  font-family: var(--font-mono);
+  background: rgba(255, 255, 255, 0.06);
+  padding: 0.1em 0.4em;
+  border-radius: 4px;
+  font-size: 0.9em;
+}
+
+@media (max-width: 768px) {
+  .container {
+    padding: 0 1rem;
+  }
+  .section-title {
+    font-size: 1.5rem;
+  }
+}

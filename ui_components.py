@@ -150,8 +150,7 @@ class ConfigFrame(ctk.CTkFrame):
         try:
             delay_ms = float(self.entry_delay.get())
             start_delay = float(self.entry_start_delay.get())
-            resume_delay = float(self.entry_resume_delay.get())
-            return delay_ms, start_delay, resume_delay
+            return delay_ms, start_delay
         except ValueError:
             raise ValueError("延时必须为数字")
 

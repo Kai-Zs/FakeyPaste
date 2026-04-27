@@ -18,7 +18,7 @@ class ClipboardTyperApp:
     def __init__(self, root):
         self.root = root
         self.root.title("FakeyPaste")
-        self.root.geometry("800x700")
+        self.root.geometry("600x500")
         self.root.resizable(True, True)
         self.root.minsize(600, 500)
 
@@ -29,6 +29,7 @@ class ClipboardTyperApp:
         self.is_locked = False
         self.preview_timestamp = 0
         self.mini_mode = False
+        self.toolbar_mode = "simple"
         self.typing_engine = TypingEngine()
         self.clipboard_manager = ClipboardManager()
         self.hotkey_handler = HotkeyHandler()
@@ -40,10 +41,10 @@ class ClipboardTyperApp:
         self.status_indicator = ctk.CTkLabel(self.status_frame, text="●", font=("Segoe UI", 14, "bold"), text_color="#28a745", padx=20)
         self.status_indicator.pack(side="left")
 
-        self.status_label = ctk.CTkLabel(self.status_frame, text="就绪 - 等待操作", font=FontManager.get(size=12, weight="bold"), text_color="#ffffff", padx=10)
+        self.status_label = ctk.CTkLabel(self.status_frame, text="就绪 - 等待操作", font=FontManager.label_font(), text_color="#ffffff", padx=10)
         self.status_label.pack(side="left", fill="x", expand=True)
 
-        self.freshness_label = ctk.CTkLabel(self.status_frame, text="", font=FontManager.get(size=10, weight="bold"), text_color="gray50", padx=15)    
+        self.freshness_label = ctk.CTkLabel(self.status_frame, text="", font=FontManager.small_label_font(), text_color="gray50", padx=15)    
         self.freshness_label.pack(side="right")
 
         self.main_frame = ctk.CTkFrame(root, corner_radius=15)
@@ -58,71 +59,98 @@ class ClipboardTyperApp:
     def _setup_ui(self):
         title_frame = ctk.CTkFrame(self.main_frame, corner_radius=12, fg_color="#667eea")
         title_frame.pack(padx=15, pady=(15, 12), fill="x")
+
+        self.mode_switch = ctk.CTkSegmentedButton(title_frame, values=["简要模式", "高级模式"],
+                                                   command=self._on_mode_switch,
+                                                   font=FontManager.button_font(),
+                                                   selected_color="#5a32a3",
+                                                   selected_hover_color="#6f42c1",
+                                                   unselected_color="#4a4a6a",
+                                                   unselected_hover_color="#5a5a7a",
+                                                   text_color="white",
+                                                   text_color_disabled="gray60",
+                                                   corner_radius=8,
+                                                   height=34)
+        self.mode_switch.set("简要模式")
+        self.mode_switch.pack(side="left", padx=(15, 0), pady=12)
+
         title_label = ctk.CTkLabel(title_frame, text="FakeyPaste", font=FontManager.get(size=16, weight="bold"), text_color="white")
-        title_label.pack(pady=15)
+        title_label.place(relx=0.5, rely=0.5, anchor="center")
 
-        toolbar_frame = ctk.CTkFrame(self.main_frame, corner_radius=10)
-        toolbar_frame.pack(padx=15, pady=(0, 12), fill="x")
+        self.toolbar_advanced = ctk.CTkFrame(self.main_frame, corner_radius=10)
 
-        left_frame = ctk.CTkFrame(toolbar_frame, fg_color="transparent")
+        left_frame = ctk.CTkFrame(self.toolbar_advanced, fg_color="transparent")
         left_frame.pack(side="left", padx=(15, 0))
 
-        self.btn_paste = ctk.CTkButton(left_frame, text="从剪贴板粘贴", command=self.paste_from_clipboard, width=140, height=38, font=FontManager.button())
-        self.btn_paste.pack(side="left", padx=(0, 10), pady=10)
+        self.btn_paste = ctk.CTkButton(left_frame, text="从剪贴板粘贴", command=self.paste_from_clipboard, width=125, height=38, font=FontManager.button_font())
+        self.btn_paste.pack(side="left", padx=(0, 8), pady=10)
 
-        self.btn_clear = ctk.CTkButton(left_frame, text="清空预览", command=self.clear_preview, width=100, height=38, font=FontManager.button_normal(), fg_color="gray70", hover_color="gray60")
+        self.btn_clear = ctk.CTkButton(left_frame, text="清空预览", command=self.clear_preview, width=88, height=38, font=FontManager.button_regular_font(), fg_color="gray70", hover_color="gray60")
         self.btn_clear.pack(side="left", padx=5, pady=10)
 
-        right_frame = ctk.CTkFrame(toolbar_frame, fg_color="transparent")
+        right_frame = ctk.CTkFrame(self.toolbar_advanced, fg_color="transparent")
         right_frame.pack(side="right", padx=(0, 15))
 
-        self.btn_start = ctk.CTkButton(right_frame, text="开始", command=self.start_typing, width=75, height=38, font=FontManager.button(), fg_color="#28a745", hover_color="#218838")
+        self.btn_start = ctk.CTkButton(right_frame, text="开始", command=self.start_typing, width=80, height=38, font=FontManager.button_font(), fg_color="#28a745", hover_color="#218838")
         self.btn_start.pack(side="left", padx=2, pady=10)
 
-        self.btn_pause = ctk.CTkButton(right_frame, text="暂停", command=self.pause_typing, width=75, height=38, font=FontManager.button(), fg_color="#ffc107", hover_color="#e0a800", state="disabled")
+        self.btn_pause = ctk.CTkButton(right_frame, text="暂停", command=self.pause_typing, width=80, height=38, font=FontManager.button_font(), fg_color="#ffc107", hover_color="#e0a800", state="disabled")
         self.btn_pause.pack(side="left", padx=2, pady=10)
 
-        self.btn_resume = ctk.CTkButton(right_frame, text="继续", command=self.resume_typing, width=75, height=38, font=FontManager.button(), fg_color="#17a2b8", hover_color="#138496", state="disabled")
+        self.btn_resume = ctk.CTkButton(right_frame, text="继续", command=self.resume_typing, width=80, height=38, font=FontManager.button_font(), fg_color="#17a2b8", hover_color="#138496", state="disabled")
         self.btn_resume.pack(side="left", padx=2, pady=10)
 
-        self.btn_stop = ctk.CTkButton(right_frame, text="停止", command=self.stop_typing, width=75, height=38, font=FontManager.get(size=12, weight="bold"), fg_color="#dc3545", hover_color="#c82333", state="disabled")
+        self.btn_stop = ctk.CTkButton(right_frame, text="停止", command=self.stop_typing, width=80, height=38, font=FontManager.button_font(), fg_color="#dc3545", hover_color="#c82333", state="disabled")
         self.btn_stop.pack(side="left", padx=2, pady=10)
 
-        self.btn_to_mini = ctk.CTkButton(right_frame, text="mini模式", command=self.toggle_mode, width=55, height=38, font=FontManager.get(size=12, weight="bold"), fg_color="#495057", hover_color="#343a40")
+        self.btn_to_mini = ctk.CTkButton(right_frame, text="mini模式", command=self.toggle_mode, width=68, height=38, font=FontManager.button_font(), fg_color="#495057", hover_color="#343a40")
         self.btn_to_mini.pack(side="left", padx=(6, 0), pady=10)
 
-        toolbar_frame.grid_columnconfigure(0, weight=1)
+        self.toolbar_advanced.grid_columnconfigure(0, weight=1)
 
-        config_frame = ctk.CTkFrame(self.main_frame, corner_radius=10)
-        config_frame.pack(padx=15, pady=(0, 12), fill="x")
+        self.toolbar_simple = ctk.CTkFrame(self.main_frame, corner_radius=10)
 
-        config_left_frame = ctk.CTkFrame(config_frame, fg_color="transparent")
+        simple_right = ctk.CTkFrame(self.toolbar_simple, fg_color="transparent")
+        simple_right.pack(side="right", padx=(0, 15))
+
+        self.btn_simple_start = ctk.CTkButton(simple_right, text="3秒后开始", command=self._simple_start, width=115, height=38, font=FontManager.button_font(), fg_color="#28a745", hover_color="#218838")
+        self.btn_simple_start.pack(side="left", padx=2, pady=10)
+
+        self.btn_simple_stop = ctk.CTkButton(simple_right, text="停止", command=self.stop_typing, width=80, height=38, font=FontManager.button_font(), fg_color="#dc3545", hover_color="#c82333", state="disabled")
+        self.btn_simple_stop.pack(side="left", padx=2, pady=10)
+
+        self.btn_to_mini_simple = ctk.CTkButton(simple_right, text="mini模式", command=self.toggle_mode, width=68, height=38, font=FontManager.button_font(), fg_color="#495057", hover_color="#343a40")
+        self.btn_to_mini_simple.pack(side="left", padx=(6, 0), pady=10)
+
+        self.config_frame = ctk.CTkFrame(self.main_frame, corner_radius=10)
+        self.config_frame.pack(padx=15, pady=(0, 12), fill="x")
+
+        config_left_frame = ctk.CTkFrame(self.config_frame, fg_color="transparent")
         config_left_frame.pack(side="left", padx=(15, 0))
 
-        ctk.CTkLabel(config_left_frame, text="字符间隔", font=FontManager.label(), text_color="gray40").pack(side="left", padx=(0, 5), pady=10)
-        self.entry_delay = ctk.CTkEntry(config_left_frame, width=60, height=32, font=FontManager.entry())
+        ctk.CTkLabel(config_left_frame, text="字符间隔", font=FontManager.label_font(), text_color="gray40").pack(side="left", padx=(0, 5), pady=10)
+        self.entry_delay = ctk.CTkEntry(config_left_frame, width=60, height=32, font=FontManager.entry_font())
         self.entry_delay.insert(0, "50")
         self.entry_delay.pack(side="left", padx=(0, 5))
-        ctk.CTkLabel(config_left_frame, text="ms", font=FontManager.small(), text_color="gray50").pack(side="left", padx=(0, 20))
+        ctk.CTkLabel(config_left_frame, text="ms", font=FontManager.small_label_font(), text_color="gray50").pack(side="left", padx=(0, 20))
 
-        ctk.CTkLabel(config_left_frame, text="开始延时", font=FontManager.get(size=12, weight="bold"), text_color="gray40").pack(side="left", padx=(0, 5))
-        self.entry_start_delay = ctk.CTkEntry(config_left_frame, width=60, height=32, font=FontManager.entry())
+        ctk.CTkLabel(config_left_frame, text="开始延时", font=FontManager.label_font(), text_color="gray40").pack(side="left", padx=(0, 5))
+        self.entry_start_delay = ctk.CTkEntry(config_left_frame, width=60, height=32, font=FontManager.entry_font())
         self.entry_start_delay.insert(0, "3")
         self.entry_start_delay.pack(side="left", padx=(0, 5))
-        ctk.CTkLabel(config_left_frame, text="秒", font=FontManager.get(size=10, weight="bold"), text_color="gray50").pack(side="left", padx=(0, 20))
+        self.entry_start_delay.bind("<KeyRelease>", lambda e: self._update_simple_start_label())
+        ctk.CTkLabel(config_left_frame, text="秒", font=FontManager.small_label_font(), text_color="gray50").pack(side="left", padx=(0, 20))
 
         self.smart_indent_var = ctk.BooleanVar(value=True)
-        self.cb_smart_indent = ctk.CTkCheckBox(config_left_frame, text="智能缩进", variable=self.smart_indent_var, font=FontManager.get(size=12, weight="bold"), command=self._on_smart_indent_toggle, onvalue=True, offvalue=False)
+        self.cb_smart_indent = ctk.CTkCheckBox(config_left_frame, text="智能缩进", variable=self.smart_indent_var, font=FontManager.label_font(), command=self._on_smart_indent_toggle, onvalue=True, offvalue=False)
         self.cb_smart_indent.pack(side="left", padx=(0, 15))
 
-        ctk.CTkLabel(config_left_frame, text="缩进宽度", font=FontManager.label(), text_color="gray40").pack(side="left", padx=(0, 5))
-        self.entry_indent_size = ctk.CTkEntry(config_left_frame, width=50, height=32, font=FontManager.entry())
+        ctk.CTkLabel(config_left_frame, text="缩进宽度", font=FontManager.label_font(), text_color="gray40").pack(side="left", padx=(0, 5))
+        self.entry_indent_size = ctk.CTkEntry(config_left_frame, width=50, height=32, font=FontManager.entry_font())
         self.entry_indent_size.insert(0, "4")
         self.entry_indent_size.pack(side="left", padx=(0, 10))
 
-        config_right_frame = ctk.CTkFrame(config_frame, fg_color="transparent")
-        config_right_frame.pack(side="right", padx=(0, 15), pady=10)
-        ctk.CTkLabel(config_right_frame, text="快捷键: Ctrl+Shift+P 开始/继续 | Ctrl+Shift+L 暂停", font=FontManager.get(size=12, weight="bold"), text_color="gray50").pack(side="left")
+        self.toolbar_simple.pack(padx=15, pady=(0, 12), fill="x", before=self.config_frame)
 
         help_frame = ctk.CTkFrame(self.main_frame, corner_radius=10)
         help_frame.pack(padx=15, pady=(0, 12), fill="x")
@@ -131,28 +159,21 @@ class ClipboardTyperApp:
         help_left_frame.pack(side="left", padx=(15, 10), pady=10, fill="both", expand=True)
 
         help_text = ("FakeyPaste —— 轻量级模拟键盘输入工具\n"
-                     "  解决网页 IDE、受限系统无法粘贴代码的难题。\n"
-                     "  逐字符模拟真实键盘输入，支持智能缩进。\n\n"
+                     "  解决网页 IDE、受限系统无法粘贴代码的难题。\n\n"
                      "使用说明：\n"
-                     "  1. 点击「从剪贴板粘贴」将剪贴板内容载入预览区（替换当前内容）\n"
-                     "  2. 切换到目标窗口并将光标定位到输入位置\n"
-                     "  3. 点击「开始」或使用快捷键 Ctrl+Shift+P 启动模拟输入\n"
-                     "  4. 输入中按 Ctrl+Shift+L 或点击「暂停」暂停\n"
-                     "  5. 暂停后按 Ctrl+Shift+P 或点击「继续」恢复\n"
-                     "  6. 点击「停止」可随时中止输入\n\n"
-                     "  智能缩进模式（默认开启）：\n"
-                     "  保留代码原始缩进，使用 Shift+Enter 换行跳过 IDE 自动缩进，\n"
-                     "  精确还原每一行的缩进层级。无需手动「清空缩进」。\n"
-                     "  缩进宽度可配置（默认 4 空格），适配 Python/C++/HTML 等。\n\n"
-                     "  「迷你」模式：隐藏预览区和提示区，仅保留核心操作按钮。\n"
-                     "  迷你模式自动置顶，始终显示在最上层，推荐配合做题使用。")
-        ctk.CTkLabel(help_left_frame, text=help_text, font=FontManager.get(size=12, weight="bold"), text_color="#e0e0e0", justify="left").pack(fill="both", expand=True)
+                     "  1. 复制文本后点击「N秒后开始」，自动载入并开始模拟输入\n"
+                     "  2. 开始前 N 秒内切换至目标窗口并定位光标\n"
+                     "  3. 点击「停止」可随时中止输入\n"
+                     "  4. 点击「迷你模式」缩为置顶小窗，方便搭配做题使用\n\n"
+                     "  点击「切换到高级模式」可展开完整功能面板。\n"
+                     "  快捷键: Ctrl+Shift+P 开始/继续 | Ctrl+Shift+L 暂停")
+        ctk.CTkLabel(help_left_frame, text=help_text, font=FontManager.label_font(), text_color="#e0e0e0", justify="left").pack(fill="both", expand=True)
 
         help_right_frame = ctk.CTkFrame(help_frame, fg_color="#2d2d2d", corner_radius=10, width=120)
         help_right_frame.pack(side="right", padx=(0, 15), pady=10, fill="y")
         help_right_frame.pack_propagate(False)
 
-        about_label = ctk.CTkLabel(help_right_frame, text="关于作者", font=FontManager.button(), text_color="#667eea")
+        about_label = ctk.CTkLabel(help_right_frame, text="关于作者", font=FontManager.button_font(), text_color="#667eea")
         about_label.pack(pady=(12, 6))
 
         avatar_frame = ctk.CTkFrame(help_right_frame, fg_color="#3d3d3d", corner_radius=8)
@@ -175,11 +196,11 @@ class ClipboardTyperApp:
         avatar_label.pack(padx=6, pady=6)
         avatar_label.bind("<Button-1>", lambda e: webbrowser.open("https://www.kaizs.cn"))
 
-        name_label = ctk.CTkLabel(help_right_frame, text="凯Z闪 (KaiZs)", font=FontManager.get(size=12, weight="bold"), text_color="#e0e0e0", cursor="hand2")
+        name_label = ctk.CTkLabel(help_right_frame, text="凯Z闪 (KaiZs)", font=FontManager.label_font(), text_color="#e0e0e0", cursor="hand2")
         name_label.pack(pady=(4, 2))
         name_label.bind("<Button-1>", lambda e: webbrowser.open("https://www.kaizs.cn"))
 
-        link_label = ctk.CTkLabel(help_right_frame, text="操作提示", font=FontManager.get(size=12, weight="bold"), text_color="#667eea", cursor="hand2")
+        link_label = ctk.CTkLabel(help_right_frame, text="操作提示", font=FontManager.label_font(), text_color="#667eea", cursor="hand2")
         link_label.pack(pady=(0, 12))
         link_label.bind("<Button-1>", lambda e: webbrowser.open("https://www.kaizs.cn/fakeypastehelp.html"))
 
@@ -189,20 +210,20 @@ class ClipboardTyperApp:
         text_top_frame = ctk.CTkFrame(text_frame, fg_color="transparent")
         text_top_frame.pack(padx=15, pady=(15, 0), fill="x")
 
-        self.btn_remove_indent = ctk.CTkButton(text_top_frame, text="清空缩进", command=self.remove_indentation, width=80, height=28, font=FontManager.get(size=12, weight="bold"), fg_color="#495057", hover_color="#343a40")     
+        self.btn_remove_indent = ctk.CTkButton(text_top_frame, text="清空缩进", command=self.remove_indentation, width=80, height=28, font=FontManager.label_font(), fg_color="#495057", hover_color="#343a40")     
         self.btn_remove_indent.pack(side="right", padx=(5, 5))
 
         self.btn_lock = ctk.CTkButton(text_top_frame, text="🔒", command=self.toggle_lock, width=32, height=28, font=("Segoe UI", 14), fg_color="#495057", hover_color="#343a40")
         self.btn_lock.pack(side="right")
 
-        self.text_area = ctk.CTkTextbox(text_frame, font=FontManager.textbox(), corner_radius=8)
+        self.text_area = ctk.CTkTextbox(text_frame, font=FontManager.textbox_font(), corner_radius=8)
         self.text_area.pack(padx=15, pady=(5, 15), fill="both", expand=True)
 
         bottom_frame = ctk.CTkFrame(self.main_frame, corner_radius=10)
         bottom_frame.pack(padx=15, pady=(0, 12), fill="x")
-        self.btn_copy = ctk.CTkButton(bottom_frame, text="复制预览到剪贴板", command=self.copy_preview_to_clipboard, width=180, height=36, font=FontManager.button_normal(), fg_color="gray70", hover_color="gray60")
+        self.btn_copy = ctk.CTkButton(bottom_frame, text="复制预览到剪贴板", command=self.copy_preview_to_clipboard, width=180, height=36, font=FontManager.button_regular_font(), fg_color="gray70", hover_color="gray60")
         self.btn_copy.pack(side="left", padx=(15, 10), pady=10)
-        self.char_count = ctk.CTkLabel(bottom_frame, text="字符数: 0", font=FontManager.entry(), text_color="gray40")
+        self.char_count = ctk.CTkLabel(bottom_frame, text="字符数: 0", font=FontManager.entry_font(), text_color="gray40")
         self.char_count.pack(side="right", padx=(0, 15), pady=10)
 
     def _setup_mini_ui(self):
@@ -231,10 +252,10 @@ class ClipboardTyperApp:
             w.bind("<Button-1>", self._start_grip_drag)
             w.bind("<B1-Motion>", self._do_grip_drag)
 
-        self.btn_paste_mini = ctk.CTkButton(mini_left, text="粘贴", command=self.paste_from_clipboard, width=60, height=30, font=FontManager.button())
+        self.btn_paste_mini = ctk.CTkButton(mini_left, text="粘贴", command=self.paste_from_clipboard, width=55, height=30, font=FontManager.button_font())
         self.btn_paste_mini.pack(side="left", padx=(0, 5))
 
-        self.btn_clear_mini = ctk.CTkButton(mini_left, text="清空", command=self.clear_preview, width=50, height=30, font=FontManager.button_normal(), fg_color="gray70", hover_color="gray60")
+        self.btn_clear_mini = ctk.CTkButton(mini_left, text="清空", command=self.clear_preview, width=48, height=30, font=FontManager.button_regular_font(), fg_color="gray70", hover_color="gray60")
         self.btn_clear_mini.pack(side="left", padx=5)
 
         center = ctk.CTkFrame(row_frame, fg_color="transparent")
@@ -243,33 +264,36 @@ class ClipboardTyperApp:
             w.bind("<Button-1>", self._start_grip_drag)
             w.bind("<B1-Motion>", self._do_grip_drag)
 
-        title = ctk.CTkLabel(center, text="FakeyPaste", font=FontManager.get(size=14, weight="bold"), text_color="#667eea", anchor="w")
+        title = ctk.CTkLabel(center, text="FakeyPaste", font=FontManager.button_font(), text_color="#667eea", anchor="w")
         title.pack(anchor="w", padx=(10, 0))
         title.bind("<Button-1>", self._start_grip_drag)
         title.bind("<B1-Motion>", self._do_grip_drag)
 
-        subtitle = ctk.CTkLabel(center, text="by KaiZs", font=FontManager.get(size=9, weight="normal"), text_color="gray50", anchor="e")
+        subtitle = ctk.CTkLabel(center, text="by KaiZs", font=FontManager.small_label_font(), text_color="gray50", anchor="e")
         subtitle.pack(anchor="e", padx=(0, 10))
 
         mini_right = ctk.CTkFrame(row_frame, fg_color="transparent")
         mini_right.pack(side="right", padx=(0, 5))
 
-        self.btn_start_mini = ctk.CTkButton(mini_right, text="开始", command=self.start_typing, width=50, height=30, font=FontManager.button(), fg_color="#28a745", hover_color="#218838")
+        self.btn_start_mini = ctk.CTkButton(mini_right, text="开始", command=self.start_typing, width=55, height=30, font=FontManager.button_font(), fg_color="#28a745", hover_color="#218838")
         self.btn_start_mini.pack(side="left", padx=2)
 
-        self.btn_pause_mini = ctk.CTkButton(mini_right, text="暂停", command=self.pause_typing, width=50, height=30, font=FontManager.button(), fg_color="#ffc107", hover_color="#e0a800", state="disabled")
+        self.btn_pause_mini = ctk.CTkButton(mini_right, text="暂停", command=self.pause_typing, width=55, height=30, font=FontManager.button_font(), fg_color="#ffc107", hover_color="#e0a800", state="disabled")
         self.btn_pause_mini.pack(side="left", padx=2)
 
-        self.btn_resume_mini = ctk.CTkButton(mini_right, text="继续", command=self.resume_typing, width=50, height=30, font=FontManager.button(), fg_color="#17a2b8", hover_color="#138496", state="disabled")
+        self.btn_resume_mini = ctk.CTkButton(mini_right, text="继续", command=self.resume_typing, width=55, height=30, font=FontManager.button_font(), fg_color="#17a2b8", hover_color="#138496", state="disabled")
         self.btn_resume_mini.pack(side="left", padx=2)
 
-        self.btn_stop_mini = ctk.CTkButton(mini_right, text="停止", command=self.stop_typing, width=50, height=30, font=FontManager.button(), fg_color="#dc3545", hover_color="#c82333", state="disabled")
+        self.btn_stop_mini = ctk.CTkButton(mini_right, text="停止", command=self.stop_typing, width=55, height=30, font=FontManager.button_font(), fg_color="#dc3545", hover_color="#c82333", state="disabled")
         self.btn_stop_mini.pack(side="left", padx=2)
+
+        self.btn_simple_start_mini = ctk.CTkButton(mini_right, text="3秒后开始", command=self._simple_start, width=85, height=30, font=FontManager.button_font(), fg_color="#28a745", hover_color="#218838")
+        self.btn_simple_stop_mini = ctk.CTkButton(mini_right, text="停止", command=self.stop_typing, width=55, height=30, font=FontManager.button_font(), fg_color="#dc3545", hover_color="#c82333", state="disabled")
 
         ctrl = ctk.CTkFrame(row_frame, fg_color="transparent")
         ctrl.pack(side="right", padx=(4, 10))
 
-        btn_res = ctk.CTkButton(ctrl, text="展开", command=self.toggle_mode, width=50, height=30, font=FontManager.get(size=12, weight="bold"), fg_color="#28a745", hover_color="#218838")
+        btn_res = ctk.CTkButton(ctrl, text="展开", command=self.toggle_mode, width=55, height=30, font=FontManager.button_font(), fg_color="#28a745", hover_color="#218838")
         btn_res.pack(side="left")
 
         self._left_edge = ctk.CTkFrame(self.mini_frame, width=6, height=30, fg_color="transparent")
@@ -307,10 +331,11 @@ class ClipboardTyperApp:
 
     def _do_edge_resize(self, event):
         dx = event.x_root - self._edge_start_x
+        min_w = 330 if self.toolbar_mode == "simple" else 530
         if self._edge_side == "left":
-            new_w = max(650, self._edge_start_w - dx)
+            new_w = max(min_w, self._edge_start_w - dx)
         else:
-            new_w = max(650, self._edge_start_w + dx)
+            new_w = max(min_w, self._edge_start_w + dx)
         self._mini_w = new_w
         self.root.geometry(f"{new_w}x{self._mini_h}")
         self._place_edges()
@@ -326,12 +351,18 @@ class ClipboardTyperApp:
             self._set_idle_state()
             self.mini_mode = False
             self.root.attributes("-topmost", False)
+            self.root.after(50, self._apply_button_states_for_mode)
         else:
             self.main_frame.pack_forget()
             self.mini_frame.pack(padx=0, pady=0, fill="both", expand=True)
-            self._mini_w = 650
-            self._mini_h = 82
-            self.root.minsize(650, 80)
+            if self.toolbar_mode == "simple":
+                self._mini_w = 380
+                self._mini_h = 82
+                self.root.minsize(330, 75)
+            else:
+                self._mini_w = 560
+                self._mini_h = 110
+                self.root.minsize(530, 100)
             self.root.geometry(f"{self._mini_w}x{self._mini_h}")
             self.root.resizable(True, False)
             self.mini_mode = True
@@ -342,7 +373,9 @@ class ClipboardTyperApp:
         self._remove_title_bar()
         self.root.update_idletasks()
         self._mini_h = self.root.winfo_height()
-        self.root.after(50, self._place_edges)
+        self.root.after(50, self._apply_mini_visibility)
+        self.root.after(60, self._apply_button_states_for_mode)
+        self.root.after(100, self._place_edges)
 
     def _remove_title_bar(self):
         try:
@@ -411,9 +444,8 @@ class ClipboardTyperApp:
     def _setup_callbacks(self):
         self.typing_engine.set_status_callback(self.set_status)
         self.hotkey_handler.set_callbacks(
-            start_callback=self.start_typing,
-            pause_callback=self.pause_typing,
-            resume_callback=self.on_start_resume_hotkey
+            start_resume_callback=self.on_start_resume_hotkey,
+            pause_callback=self.pause_typing
         )
 
         try:
@@ -423,9 +455,12 @@ class ClipboardTyperApp:
             self.set_status(f'快捷键注册失败: {str(e)}')
 
     def on_start_resume_hotkey(self):
-        if self.typing_engine.is_paused():
+        if self.toolbar_mode == "simple":
+            if not self.typing_engine.is_typing():
+                self._simple_start()
+        elif self.typing_engine.is_paused():
             self.resume_typing()
-        else:
+        elif not self.typing_engine.is_typing():
             self.start_typing()
 
     def _check_dependencies(self):
@@ -539,37 +574,35 @@ class ClipboardTyperApp:
             self.status_indicator.configure(text_color="#6c757d")
             self._set_idle_state()
 
+    def _set_button_state(self, buttons, state):
+        for btn in buttons:
+            btn.configure(state=state)
+
     def _set_idle_state(self):
-        for b in (self.btn_start, self.btn_start_mini):
-            b.configure(state="normal")
-        for b in (self.btn_pause, self.btn_pause_mini):
-            b.configure(state="disabled")
-        for b in (self.btn_resume, self.btn_resume_mini):
-            b.configure(state="disabled")
-        for b in (self.btn_stop, self.btn_stop_mini):
-            b.configure(state="disabled")
+        self._set_button_state((self.btn_start, self.btn_start_mini), "normal")
+        self._set_button_state((self.btn_pause, self.btn_pause_mini), "disabled")
+        self._set_button_state((self.btn_resume, self.btn_resume_mini), "disabled")
+        self._set_button_state((self.btn_stop, self.btn_stop_mini), "disabled")
+        self._set_button_state((self.btn_simple_start, self.btn_simple_start_mini), "normal")
+        self._set_button_state((self.btn_simple_stop, self.btn_simple_stop_mini), "disabled")
         self.unlock_preview()
 
     def _set_typing_state(self):
-        for b in (self.btn_start, self.btn_start_mini):
-            b.configure(state="disabled")
-        for b in (self.btn_pause, self.btn_pause_mini):
-            b.configure(state="normal")
-        for b in (self.btn_resume, self.btn_resume_mini):
-            b.configure(state="disabled")
-        for b in (self.btn_stop, self.btn_stop_mini):
-            b.configure(state="normal")
+        self._set_button_state((self.btn_start, self.btn_start_mini), "disabled")
+        self._set_button_state((self.btn_pause, self.btn_pause_mini), "normal")
+        self._set_button_state((self.btn_resume, self.btn_resume_mini), "disabled")
+        self._set_button_state((self.btn_stop, self.btn_stop_mini), "normal")
+        self._set_button_state((self.btn_simple_start, self.btn_simple_start_mini), "disabled")
+        self._set_button_state((self.btn_simple_stop, self.btn_simple_stop_mini), "normal")
         self.lock_preview()
 
     def _set_paused_state(self):
-        for b in (self.btn_start, self.btn_start_mini):
-            b.configure(state="disabled")
-        for b in (self.btn_pause, self.btn_pause_mini):
-            b.configure(state="disabled")
-        for b in (self.btn_resume, self.btn_resume_mini):
-            b.configure(state="normal")
-        for b in (self.btn_stop, self.btn_stop_mini):
-            b.configure(state="normal")
+        self._set_button_state((self.btn_start, self.btn_start_mini), "disabled")
+        self._set_button_state((self.btn_pause, self.btn_pause_mini), "disabled")
+        self._set_button_state((self.btn_resume, self.btn_resume_mini), "normal")
+        self._set_button_state((self.btn_stop, self.btn_stop_mini), "normal")
+        self._set_button_state((self.btn_simple_start, self.btn_simple_start_mini), "disabled")
+        self._set_button_state((self.btn_simple_stop, self.btn_simple_stop_mini), "normal")
         self.lock_preview()
 
     def paste_from_clipboard(self):
@@ -611,6 +644,102 @@ class ClipboardTyperApp:
             self.entry_indent_size.configure(state="normal")
         else:
             self.entry_indent_size.configure(state="disabled")
+
+    def _on_mode_switch(self, value):
+        target = "simple" if value.startswith("简要") else "advanced"
+        if self.toolbar_mode != target:
+            self._toggle_toolbar_mode()
+
+    def _toggle_toolbar_mode(self):
+        if self.toolbar_mode == "advanced":
+            self.toolbar_mode = "simple"
+            self.toolbar_advanced.pack_forget()
+            self.toolbar_simple.pack(padx=15, pady=(0, 12), fill="x", before=self.config_frame)
+            self._update_simple_start_label()
+            self._apply_button_states_for_mode()
+            if not self.mini_mode:
+                self.root.minsize(600, 500)
+                self.root.geometry("600x500")
+        else:
+            self.toolbar_mode = "advanced"
+            self.toolbar_simple.pack_forget()
+            self.toolbar_advanced.pack(padx=15, pady=(0, 12), fill="x", before=self.config_frame)
+            self._apply_button_states_for_mode()
+            if not self.mini_mode:
+                self.root.minsize(600, 500)
+                self.root.geometry("800x700")
+
+        if self.mini_mode:
+            self._apply_mini_visibility()
+            if self.toolbar_mode == "simple":
+                self._mini_w = 380
+                self._mini_h = 82
+                self.root.minsize(330, 75)
+            else:
+                self._mini_w = 560
+                self._mini_h = 110
+                self.root.minsize(530, 100)
+            self.root.geometry(f"{self._mini_w}x{self._mini_h}")
+            self.root.after(100, self._place_edges)
+
+    def _simple_start(self):
+        try:
+            txt = self.clipboard_manager.get_text()
+        except Exception as e:
+            messagebox.showerror("剪贴板错误", str(e))
+            self._update_simple_start_label()
+            return
+        if not txt:
+            messagebox.showinfo("无内容", "剪贴板为空")
+            self._update_simple_start_label()
+            return
+        self.text_area.delete("1.0", "end")
+        self.text_area.insert("1.0", txt)
+        self.preview_timestamp = time.time()
+        self.update_char_count()
+        self.start_typing()
+
+    def _update_simple_start_label(self):
+        try:
+            delay = float(self.entry_start_delay.get())
+        except ValueError:
+            delay = 3.0
+        if delay == int(delay):
+            delay_str = str(int(delay))
+        else:
+            delay_str = f"{delay:.1f}"
+        self.btn_simple_start.configure(text=f"{delay_str}秒后开始")
+        if hasattr(self, 'btn_simple_start_mini'):
+            self.btn_simple_start_mini.configure(text=f"{delay_str}秒后开始")
+
+    def _apply_mini_visibility(self):
+        if self.toolbar_mode == "simple":
+            self.btn_paste_mini.pack_forget()
+            self.btn_clear_mini.pack_forget()
+            self.btn_start_mini.pack_forget()
+            self.btn_pause_mini.pack_forget()
+            self.btn_resume_mini.pack_forget()
+            self.btn_stop_mini.pack_forget()
+            self.btn_simple_start_mini.pack(side="left", padx=2)
+            self.btn_simple_stop_mini.pack(side="left", padx=2)
+        else:
+            self.btn_paste_mini.pack(side="left", padx=(0, 5))
+            self.btn_clear_mini.pack(side="left", padx=5)
+            self.btn_start_mini.pack(side="left", padx=2)
+            self.btn_pause_mini.pack(side="left", padx=2)
+            self.btn_resume_mini.pack(side="left", padx=2)
+            self.btn_stop_mini.pack(side="left", padx=2)
+            self.btn_simple_start_mini.pack_forget()
+            self.btn_simple_stop_mini.pack_forget()
+
+    def _apply_button_states_for_mode(self):
+        if self.typing_engine.is_typing():
+            if self.typing_engine.is_paused():
+                self._set_paused_state()
+            else:
+                self._set_typing_state()
+        else:
+            self._set_idle_state()
 
     def lock_preview(self):
         self.is_locked = True
