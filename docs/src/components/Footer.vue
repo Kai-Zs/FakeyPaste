@@ -6,7 +6,7 @@
     <div class="container footer-inner">
       <div class="footer-brand">
         <div class="footer-brand__name">FakeyPaste</div>
-        <div class="footer-brand__ver">v1.2.1</div>
+        <div class="footer-brand__ver">v2.0</div>
       </div>
 
       <div class="footer-links">
@@ -17,7 +17,7 @@
       </div>
 
       <div class="footer-copy">
-        © 2026 凯Z闪 (KaiZs) · Powered by Python & CustomTkinter
+        © 2026 凯Z闪 (KaiZs) · GPLv3 Licensed · Powered by Python & CustomTkinter
       </div>
     </div>
   </footer>

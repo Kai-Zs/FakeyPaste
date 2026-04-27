@@ -8,7 +8,12 @@
     <div class="hero-bg-orb hero-bg-orb--purple"></div>
 
     <div class="container hero-inner">
-      <div class="hero-badge glass">v1.2.1 · 完全免费</div>
+      <div class="hero-badges">
+        <img src="https://img.shields.io/badge/v2.0-ff5555?style=for-the-badge&logo=v&logoColor=white" alt="v2.0" class="hero-badge-img">
+        <img src="https://img.shields.io/badge/GPLv3-8be9fd?style=for-the-badge&logo=gnu&logoColor=white" alt="GPLv3" class="hero-badge-img">
+        <img src="https://img.shields.io/badge/Python-3.10+-bd93f9?style=for-the-badge&logo=python&logoColor=white" alt="Python" class="hero-badge-img">
+        <img src="https://img.shields.io/badge/Windows-10|11-50fa7b?style=for-the-badge&logo=windows&logoColor=white" alt="Windows" class="hero-badge-img">
+      </div>
 
       <h1 class="hero-title">
         Fakey<span class="hero-title__accent">Paste</span>
@@ -28,6 +33,16 @@
           ⬇️ 下载最新版
         </a>
       </div>
+
+      <details class="alt-download glass-card">
+        <summary class="alt-download__toggle">无法访问 GitHub？备选下载</summary>
+        <div class="alt-download__links">
+          <a href="https://yyskk.lanzoub.com/iW5je3o4wh2d" target="_blank" rel="noopener">蓝奏云</a>
+          <span class="alt-download__hint">密码: 7os2</span>
+          <span class="alt-download__sep">|</span>
+          <a href="https://www.kaizs.cn/download/FakeyPaste_v2.0.exe" target="_blank" rel="noopener">kaizs.cn 直链</a>
+        </div>
+      </details>
 
       <div class="hero-modes">
         <div class="hero-mode glass-card">
@@ -104,6 +119,19 @@
   margin-bottom: 2rem;
 }
 
+.hero-badges {
+  display: flex;
+  justify-content: center;
+  gap: 0.6rem;
+  margin-bottom: 2rem;
+  flex-wrap: wrap;
+}
+
+.hero-badge-img {
+  height: 28px;
+  border-radius: 6px;
+}
+
 .hero-title {
   font-size: 4.5rem;
   font-weight: 700;
@@ -151,6 +179,59 @@
 
 .hero-btn--download {
   color: var(--accent);
+}
+
+.alt-download {
+  display: inline-block;
+  max-width: 480px;
+  margin: 0 auto 2.5rem;
+  padding: 0;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+}
+
+.alt-download__toggle {
+  padding: 0.55rem 1.2rem;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  list-style: none;
+  user-select: none;
+}
+
+.alt-download__toggle::marker {
+  display: none;
+}
+
+.alt-download__toggle:hover {
+  color: var(--accent);
+}
+
+.alt-download__links {
+  padding: 0.5rem 1.2rem 0.8rem;
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+  border-top: 1px solid var(--border-glass);
+}
+
+.alt-download__links a {
+  color: var(--accent);
+}
+
+.alt-download__links a:hover {
+  color: var(--secondary);
+}
+
+.alt-download__hint {
+  color: var(--text-muted);
+  font-size: 0.78rem;
+}
+
+.alt-download__sep {
+  color: var(--border-color);
 }
 
 .hero-modes {
